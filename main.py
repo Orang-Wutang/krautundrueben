@@ -24,7 +24,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("krautundrueben Datenbank")
-        self.setFixedSize(1050, 700)  # Breite x Höhe, anpassen je nach Tabelleninhalt
+        self.setFixedSize(1000, 700)
+        self.center()
 
         tabs = QTabWidget()
         tabs.addTab(KundenTab(), "Kunden")
@@ -32,6 +33,13 @@ class MainWindow(QMainWindow):
         tabs.addTab(ZutatenTab(), "Zutaten")
 
         self.setCentralWidget(tabs)
+
+    def center(self):
+        frameGm = self.frameGeometry()
+        screen = self.screen().availableGeometry().center()
+        frameGm.moveCenter(screen)
+        self.move(frameGm.topLeft())
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

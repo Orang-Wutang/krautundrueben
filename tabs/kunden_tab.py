@@ -10,10 +10,18 @@ class KundenTab(QWidget):
         super().__init__()
         layout = QVBoxLayout()
 
+        # Suchfeld
+        self.suchfeld = QLineEdit()
+        self.suchfeld.setPlaceholderText("🔍 Kunden suchen nach Name, Vorname oder E-Mail")
+        self.suchfeld.textChanged.connect(self.kunden_filtern)
+        layout.addWidget(self.suchfeld)
+
+        # Button zum Kunden hinzufügen
         self.add_button = QPushButton("➕ Neuen Kunden anlegen")
         self.add_button.clicked.connect(self.kunde_hinzufuegen_dialog)
         layout.addWidget(self.add_button)
 
+        # Tabelle
         self.table = QTableWidget()
         layout.addWidget(self.table)
 
@@ -172,4 +180,36 @@ class KundenTab(QWidget):
 
         cursor.close()
         conn.close()
+
+    def kunden_filtern(self):
+        suchtext = self.suchfeld.text().lower()
+
+        # Neuladen aller Kunden aus DB
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT KUNDENNR, NACHNAME, VORNAME, EMAIL, GEBURTSDATUM, STRASSE, HAUSNR, PLZ, ORT, TELEFON FROM KUNDE")
+        daten = cursor.fetchall()
+        cursor.close()
+        conn.close()
+
+        # Filter anwenden
+        gefiltert = [
+            row for row in daten
+            if suchtext in str(row[1]).lower()
+               or suchtext in str(row[2]).lower()
+               or suchtext in str(row[3]).lower()
+        ]
+
+        self.table.setRowCount(len(gefiltert))
+        self.table.setColumnCount(10)
+        self.table.setHorizontalHeaderLabels([
+            "Kundennr", "Nachname", "Vorname", "E-Mail", "Geburtsdatum",
+            "Straße", "Hausnr.", "PLZ", "Ort", "Telefon"
+        ])
+
+        for i, row in enumerate(gefiltert):
+            for j, value in enumerate(row):
+                self.table.setItem(i, j, QTableWidgetItem(str(value)))
+
 
