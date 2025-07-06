@@ -24,7 +24,7 @@ class BestellungenTab(QWidget):
 
         self.table.setRowCount(len(daten))
         self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(["Bestellnr", "Kunde", "Datum", "Betrag"])
+        self.table.setHorizontalHeaderLabels(["Bestellnr.", "Kunde", "Datum", "Betrag"])
 
         for i, row in enumerate(daten):
             for j, value in enumerate(row):

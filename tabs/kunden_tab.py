@@ -1,8 +1,12 @@
 # tabs/kunden_tab.py
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QLineEdit, QDialog, QFormLayout, QDialogButtonBox
-from db import get_connection
-from PyQt5.QtWidgets import QMessageBox
 import random
+
+from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QDialog, QFormLayout, \
+    QDialogButtonBox
+
+from db import get_connection
 
 
 class KundenTab(QWidget):
@@ -11,24 +15,24 @@ class KundenTab(QWidget):
         layout = QVBoxLayout()
 
         # Suchfeld
-        self.suchfeld = QLineEdit()
+        self.suchfeld: QLineEdit = QLineEdit()
         self.suchfeld.setPlaceholderText("🔍 Kunden suchen nach Name, Vorname oder E-Mail")
         self.suchfeld.textChanged.connect(self.kunden_filtern)
         layout.addWidget(self.suchfeld)
 
         # Button zum Kunden hinzufügen
-        self.add_button = QPushButton("➕ Neuen Kunden anlegen")
+        self.add_button: QPushButton = QPushButton("➕ Neuen Kunden anlegen")
         self.add_button.clicked.connect(self.kunde_hinzufuegen_dialog)
         layout.addWidget(self.add_button)
 
         # Tabelle
-        self.table = QTableWidget()
+        self.table: QTableWidget = QTableWidget()
         layout.addWidget(self.table)
 
         self.setLayout(layout)
         self.lade_kunden()
 
-        self.delete_button = QPushButton("🗑️ Kunden löschen")
+        self.delete_button: QPushButton = QPushButton("🗑️ Kunden löschen")
         self.delete_button.clicked.connect(self.kunde_loeschen)
         layout.addWidget(self.delete_button)
 
@@ -111,9 +115,6 @@ class KundenTab(QWidget):
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         form.addWidget(buttons)
-
-        buttons.accepted.connect(dialog.accept)
-        buttons.rejected.connect(dialog.reject)
 
         def ist_gueltig(feld):
             return feld.text().strip() != ""

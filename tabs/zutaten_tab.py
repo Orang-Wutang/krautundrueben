@@ -7,11 +7,15 @@ class ZutatenTab(QWidget):
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
-        self.table = QTableWidget()
+
+        self.table: QTableWidget = QTableWidget()
         layout.addWidget(self.table)
+
         self.setLayout(layout)
         self.lade_zutaten()
+
         self.table.itemChanged.connect(self.bestand_aktualisieren)
+
 
     def lade_zutaten(self):
         conn = get_connection()

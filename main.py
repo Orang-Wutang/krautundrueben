@@ -35,16 +35,16 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(tabs)
 
     def center(self):
-        frameGm = self.frameGeometry()
+        frame_gm = self.frameGeometry()
         screen = self.screen().availableGeometry().center()
-        frameGm.moveCenter(screen)
-        self.move(frameGm.topLeft())
+        frame_gm.moveCenter(screen)
+        self.move(frame_gm.topLeft())
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # QSS-Datei laden
-    with open("style.css", "r") as f:
+    with open("style.qss", "r") as f:
         app.setStyleSheet(f.read())
     window = MainWindow()
     window.show()
