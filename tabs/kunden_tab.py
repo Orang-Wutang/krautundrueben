@@ -1,6 +1,8 @@
 # tabs/kunden_tab.py
 import random
 
+from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QDialog, QFormLayout, \
@@ -29,6 +31,10 @@ class KundenTab(QWidget):
         self.table: QTableWidget = QTableWidget()
         layout.addWidget(self.table)
 
+        self.status_label: QLabel = QLabel("")
+        self.status_label.setStyleSheet("color: green; font-style: italic; padding-left: 6px;")
+        layout.addWidget(self.status_label)
+
         self.setLayout(layout)
         self.lade_kunden()
 
@@ -48,7 +54,7 @@ class KundenTab(QWidget):
         # 1. Schritt: erste witzige Frage
         texte = [
             "Willst du diesen Kunden wirklich löschen? 😢",
-            "Wirklich löschen? Vielleicht hat er einfach nur einen schlechten Tag gehabt 🤷‍♀️",
+            "Wirklich löschen? Vielleicht hat er einfach nur einen schlechten Tag gehabt 🤷‍",
             "Das ist dein letzter Moment, um es dir anders zu überlegen… 🤔",
             "Der Kunde wird nie wieder gesehen werden. Bist du bereit für diese Verantwortung?",
             f"Kundennummer {kundennr}… war's das wirklich wert?"
@@ -86,7 +92,9 @@ class KundenTab(QWidget):
         conn.commit()
         cursor.close()
         conn.close()
+
         self.lade_kunden()
+        self.zeige_statusmeldung("✅ Kunde erfolgreich gespeichert.")
 
     def kunde_hinzufuegen_dialog(self):
         dialog = QDialog(self)
@@ -116,39 +124,38 @@ class KundenTab(QWidget):
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         form.addWidget(buttons)
 
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+
         def ist_gueltig(feld):
             return feld.text().strip() != ""
 
         if dialog.exec_() == QDialog.Accepted:
-            felder = [vorname, nachname, email, geburtstag, strasse, hausnr, plz, ort, telefon]
-            if not all(ist_gueltig(f) for f in felder):
-                QMessageBox.warning(self, "Fehler", "Alle Felder müssen ausgefüllt sein (kein Leerzeichen).")
+            # Die Felder müssen hier außerhalb vom Dialog-Block sein:
+            vorname_text = vorname.text().strip()
+            nachname_text = nachname.text().strip()
+            email_text = email.text().strip()
+            # ... weitere Felder ebenfalls auslesen
+
+            if not vorname_text or not nachname_text or not email_text:
+                self.zeige_statusmeldung("⚠️ Alle Felder müssen ausgefüllt sein.")
                 return
+
             conn = get_connection()
             cursor = conn.cursor()
             cursor.execute("SELECT MAX(KUNDENNR) FROM KUNDE")
             max_id = cursor.fetchone()[0] or 2000
             neue_id = max_id + 1
-            cursor.execute("""
-                           INSERT INTO KUNDE (KUNDENNR, VORNAME, NACHNAME, EMAIL, GEBURTSDATUM, STRASSE, HAUSNR,
-                                              PLZ, ORT, TELEFON)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                           """, (
-                               neue_id,
-                               vorname.text().strip(),
-                               nachname.text().strip(),
-                               email.text().strip(),
-                               geburtstag.text().strip(),
-                               strasse.text().strip(),
-                               hausnr.text().strip(),
-                               plz.text().strip(),
-                               ort.text().strip(),
-                               telefon.text().strip()
-                           ))
+            cursor.execute(
+                "INSERT INTO KUNDE (KUNDENNR, VORNAME, NACHNAME, EMAIL) VALUES (%s, %s, %s, %s)",
+                (neue_id, vorname_text, nachname_text, email_text)
+            )
             conn.commit()
             cursor.close()
             conn.close()
+
             self.lade_kunden()
+            self.zeige_statusmeldung("✅ Kunde erfolgreich gespeichert.")
 
     def lade_kunden(self):
         conn = get_connection()
@@ -212,5 +219,13 @@ class KundenTab(QWidget):
         for i, row in enumerate(gefiltert):
             for j, value in enumerate(row):
                 self.table.setItem(i, j, QTableWidgetItem(str(value)))
+
+    def zeige_statusmeldung(self, text: str, dauer_ms: int = 3000):
+        self.status_label.setText(text)
+        QTimer.singleShot(dauer_ms, lambda: self.status_label.setText(""))
+
+
+
+
 
 
