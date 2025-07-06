@@ -2,6 +2,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QLineEdit, QDialog, QFormLayout, QDialogButtonBox
 from db import get_connection
 from PyQt5.QtWidgets import QMessageBox
+import random
 
 
 class KundenTab(QWidget):
@@ -17,6 +18,62 @@ class KundenTab(QWidget):
         layout.addWidget(self.table)
 
         self.setLayout(layout)
+        self.lade_kunden()
+
+        self.delete_button = QPushButton("🗑️ Kunden löschen")
+        self.delete_button.clicked.connect(self.kunde_loeschen)
+        layout.addWidget(self.delete_button)
+
+    def kunde_loeschen(self):
+        selected_items = self.table.selectedItems()
+        if not selected_items:
+            QMessageBox.warning(self, "Keine Auswahl", "Bitte wähle einen Kunden aus, den du löschen möchtest.")
+            return
+
+        zeile = selected_items[0].row()
+        kundennr = self.table.item(zeile, 0).text()
+
+        # 1. Schritt: erste witzige Frage
+        texte = [
+            "Willst du diesen Kunden wirklich löschen? 😢",
+            "Wirklich löschen? Vielleicht hat er einfach nur einen schlechten Tag gehabt 🤷‍♀️",
+            "Das ist dein letzter Moment, um es dir anders zu überlegen… 🤔",
+            "Der Kunde wird nie wieder gesehen werden. Bist du bereit für diese Verantwortung?",
+            f"Kundennummer {kundennr}… war's das wirklich wert?"
+        ]
+
+        spruch = random.choice(texte)
+
+        erste_frage = QMessageBox.question(
+            self,
+            "Letzte Chance 😬",
+            spruch,
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        if erste_frage != QMessageBox.Yes:
+            return  # abgebrochen
+
+        # 2. Schritt: Noch mal ganz sicher?
+        zweite_frage = QMessageBox.question(
+            self,
+            "Letzte Warnung 🚨",
+            f"Bist du dir wirklich WIRKLICH sicher, dass du Kunde {kundennr} löschen willst?\nDas kann man nicht rückgängig machen!",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        if zweite_frage != QMessageBox.Yes:
+            return  # abgebrochen
+
+        # 3. Schritt: Jetzt wirklich löschen
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM KUNDE WHERE KUNDENNR = %s", (kundennr,))
+        conn.commit()
+        cursor.close()
+        conn.close()
         self.lade_kunden()
 
     def kunde_hinzufuegen_dialog(self):
