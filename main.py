@@ -24,7 +24,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("krautundrueben Datenbank")
-        self.resize(800, 600)
+        self.setFixedSize(1050, 700)  # Breite x Höhe, anpassen je nach Tabelleninhalt
 
         tabs = QTabWidget()
         tabs.addTab(KundenTab(), "Kunden")
@@ -35,6 +35,9 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    # QSS-Datei laden
+    with open("style.css", "r") as f:
+        app.setStyleSheet(f.read())
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
