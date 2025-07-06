@@ -1,5 +1,6 @@
 # tabs/bestellungen_tab.py
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QLineEdit
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QLineEdit, QHeaderView
+from PyQt5.QtCore import Qt
 from db import get_connection
 
 class BestellungenTab(QWidget):
@@ -14,6 +15,12 @@ class BestellungenTab(QWidget):
 
         self.table = QTableWidget()
         layout.addWidget(self.table)
+
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.table.horizontalHeader().setStretchLastSection(False)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+
         self.setLayout(layout)
         self.lade_bestellungen()
 
@@ -35,6 +42,9 @@ class BestellungenTab(QWidget):
         for i, row in enumerate(daten):
             for j, value in enumerate(row):
                 self.table.setItem(i, j, QTableWidgetItem(str(value)))
+        # Manuell breite Spalten setzen, damit Scrollbar sichtbar wird
+        for i in range(10):  # 10 Spalten
+            self.table.setColumnWidth(i, 200)
 
         cursor.close()
         conn.close()

@@ -22,10 +22,13 @@ test_db_connection()
 
 class MainWindow(QMainWindow):
     def __init__(self):
+
         super().__init__()
         self.setWindowTitle("krautundrueben Datenbank")
-        self.setFixedSize(1000, 700)
+        self.setMinimumSize(1000, 650)
+        self.resize(1200, 750)
         self.center()
+        self.setWindowTitle("🌸 krautundrueben Dashboard")
 
         tabs = QTabWidget()
         tabs.addTab(KundenTab(), "Kunden")

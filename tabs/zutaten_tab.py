@@ -1,7 +1,8 @@
 # tabs/zutaten_tab.py
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QLineEdit
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QLineEdit, QMessageBox
+
 from db import get_connection
-from PyQt5.QtWidgets import QMessageBox
+
 
 class ZutatenTab(QWidget):
     def __init__(self):
@@ -55,6 +56,8 @@ class ZutatenTab(QWidget):
         for i, row in enumerate(daten):
             for j, value in enumerate(row):
                 self.table.setItem(i, j, QTableWidgetItem(str(value)))
+        for i in range(self.table.columnCount()):
+            self.table.setColumnWidth(i, 200)
 
         cursor.close()
         conn.close()
