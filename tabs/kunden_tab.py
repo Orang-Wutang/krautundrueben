@@ -33,6 +33,7 @@ class KundenTab(QWidget):
         # Tabelle
         self.table = QTableWidget()
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.table.cellDoubleClicked.connect(self.kunde_bearbeiten_dialog)
 
         layout.addWidget(self.table)
 
@@ -205,3 +206,64 @@ class KundenTab(QWidget):
     def zeige_statusmeldung(self, text: str, dauer_ms: int = 3000):
         self.status_label.setText(text)
         QTimer.singleShot(dauer_ms, lambda: self.status_label.setText(""))
+
+    def kunde_bearbeiten_dialog(self, row, column):
+        aktuelle_bezeichnung = self.table.horizontalHeaderItem(column).text()
+        alter_wert = self.table.item(row, column).text()
+        kundennr = int(self.table.item(row, 0).text())  # Spalte 0 = KUNDENNR
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(f"{aktuelle_bezeichnung} bearbeiten")
+
+        layout = QVBoxLayout(dialog)
+
+        feld = QLineEdit()
+        feld.setText(alter_wert)
+        layout.addWidget(QLabel(f"Neuer Wert für {aktuelle_bezeichnung}:"))
+        layout.addWidget(feld)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        layout.addWidget(buttons)
+
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+
+
+        if dialog.exec_() == QDialog.Accepted:
+            neuer_wert = feld.text().strip()
+
+            # Mapping Spalte zu DB-Spaltennamen
+            spalten_map = {
+                "Vorname": "VORNAME",
+                "Nachname": "NACHNAME",
+                "Geburtsdatum": "GEBURTSDATUM",
+                "Straße": "STRASSE",
+                "Hausnr.": "HAUSNR",
+                "PLZ": "PLZ",
+                "Ort": "ORT",
+                "Telefon": "TELEFON",
+                "E-Mail": "EMAIL"
+            }
+
+            spaltenname = spalten_map.get(aktuelle_bezeichnung)
+
+            if not spaltenname:
+                QMessageBox.warning(self, "Nicht editierbar", "Diese Spalte kann nicht bearbeitet werden.")
+                return
+
+            # In DB aktualisieren
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                f"UPDATE KUNDE SET {spaltenname} = %s WHERE KUNDENNR = %s",
+                (neuer_wert, kundennr)
+            )
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            # Tabelle neu laden
+            self.lade_kunden()
+            self.zeige_statusmeldung("✅ Kundendaten aktualisiert.")
+
+
