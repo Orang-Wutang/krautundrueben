@@ -152,3 +152,36 @@ QDialogButtonBox QPushButton:hover {
 QDialogButtonBox QPushButton:pressed {
     background-color: #E6448E;
 }
+
+QComboBox {
+    background-color: white;
+    border: 2px solid #f48fb1;
+    border-radius: 12px;
+    padding: 6px 30px 6px 10px;
+    font-size: 14px;
+}
+
+/* Bereich rechts, wo der Pfeil sitzt */
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 24px;
+    border: none;
+    background: transparent;
+}
+
+/* Dein eigener Dropdown-Pfeil */
+QComboBox::down-arrow {
+    image: url(images/angle-small-down.png);
+    width: 16px;
+    height: 16px;
+}
+
+
+QComboBox QAbstractItemView {
+    background-color: #fff0f5;
+    border: 1px solid #ff69b4;
+    selection-background-color: #ffb6c1;
+    padding: 4px;
+    font-size: 11pt;
+}

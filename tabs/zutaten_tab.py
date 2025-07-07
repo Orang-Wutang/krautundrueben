@@ -1,5 +1,5 @@
 # tabs/zutaten_tab.py
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QLineEdit, QMessageBox, QComboBox, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QLineEdit, QMessageBox, QComboBox, QHBoxLayout, QPushButton, QHeaderView
 
 from db import get_connection
 
@@ -8,6 +8,16 @@ class ZutatenTab(QWidget):
     def __init__(self):
         super().__init__()
         layout = QVBoxLayout()
+
+        self.setStyleSheet("""
+            QToolTip {
+                background-color: white;
+                color: black;
+                border: 1px solid gray;
+                padding: 5px;
+                font-size: 11pt;
+            }
+        """)
 
         self.suchfeld: QLineEdit = QLineEdit()
         self.suchfeld.setPlaceholderText("🔍 Zutaten suchen nach Bezeichnung oder Einheit")
@@ -48,10 +58,15 @@ class ZutatenTab(QWidget):
         cursor.close()
         conn.close()
 
-        # Jetzt Events verbinden
         self.filter_button = QPushButton("🔎 Filter anwenden")
+        self.filter_button.setFixedWidth(250)
         self.filter_button.clicked.connect(self.zutaten_filtern)
-        layout.addWidget(self.filter_button)
+
+        button_layout_filter = QHBoxLayout()
+        button_layout_filter.addStretch()
+        button_layout_filter.addWidget(self.filter_button)
+        button_layout_filter.addStretch()
+        layout.addLayout(button_layout_filter)
 
         self.table.itemChanged.connect(self.bestand_aktualisieren)
 
@@ -103,6 +118,7 @@ class ZutatenTab(QWidget):
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(
             ["Bezeichnung", "Bestand", "Einheit", "Nettopreis", "Allergene", "Kategorien"])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         for zeile, (zutnr, bez, bestand, einheit, preis) in enumerate(zutaten):
             # Allergene abfragen

@@ -20,6 +20,7 @@ class BestellungenTab(QWidget):
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.horizontalHeader().setStretchLastSection(False)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         self.setLayout(layout)
         self.lade_bestellungen()

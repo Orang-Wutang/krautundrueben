@@ -32,12 +32,15 @@ class KundenTab(QWidget):
 
         # Tabelle
         self.table = QTableWidget()
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
         layout.addWidget(self.table)
 
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.horizontalHeader().setStretchLastSection(False)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # Status-Label
         self.status_label = QLabel("")
@@ -141,9 +144,21 @@ class KundenTab(QWidget):
             max_id = cursor.fetchone()[0] or 2000
             neue_id = max_id + 1
             cursor.execute("""
-                INSERT INTO KUNDE (KUNDENNR, VORNAME, NACHNAME, EMAIL)
-                VALUES (%s, %s, %s, %s)
-            """, (neue_id, werte["Vorname"], werte["Nachname"], werte["E-Mail"]))
+                           INSERT INTO KUNDE (KUNDENNR, VORNAME, NACHNAME, EMAIL, GEBURTSDATUM, STRASSE, HAUSNR, PLZ,
+                                              ORT, TELEFON)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                           """, (
+                               neue_id,
+                               werte["Vorname"],
+                               werte["Nachname"],
+                               werte["E-Mail"],
+                               werte["Geburtsdatum (JJJJ-MM-TT)"] or None,
+                               werte["Straße"] or None,
+                               werte["Hausnummer"] or None,
+                               werte["PLZ"] or None,
+                               werte["Ort"] or None,
+                               werte["Telefon"] or None
+                           ))
             conn.commit()
             cursor.close()
             conn.close()
