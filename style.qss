@@ -1,15 +1,15 @@
-/* GLOBAL */
+/* GLOBAL DEFAULTS */
 * {
     font-family: 'Segoe UI', sans-serif;
     font-size: 12pt;
-    color: #3C3C3C;
+    color: #333333;
     background: transparent;
     border: none;
 }
 
-/* WINDOW */
+/* MAIN WINDOW */
 QMainWindow {
-    background-color: #FDE6F3;
+    background-color: #FDF0F5;  /* zartes Rosa als Basis */
 }
 
 /* LABELS */
@@ -18,12 +18,24 @@ QLabel {
     font-weight: 500;
 }
 
+/* LINE EDIT */
+QLineEdit {
+    background-color: #FFFFFF;
+    padding: 8px 12px;
+    border: 2px solid #FFB6C1;
+    border-radius: 10px;
+}
+QLineEdit:focus {
+    border: 2px solid #FF69B4;
+}
+
 /* BUTTONS */
 QPushButton {
     background-color: #FF69B4;
     color: white;
-    padding: 8px 16px;
-    border-radius: 8px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: bold;
 }
 QPushButton:hover {
     background-color: #FF4FA0;
@@ -32,33 +44,11 @@ QPushButton:pressed {
     background-color: #E6448E;
 }
 
-/* LINE EDITS */
-QLineEdit {
-    background-color: #FFF0F8;
-    padding: 6px 10px;
-    border: 2px solid #FFB6C1;
-    border-radius: 6px;
-}
-QLineEdit:focus {
-    border: 2px solid #FF69B4;
-}
-
-/* COMBO BOX */
-QComboBox {
-    background-color: #FFF0F8;
-    border: 2px solid #FFB6C1;
-    border-radius: 6px;
-    padding: 6px 10px;
-}
-QComboBox QAbstractItemView {
-    background-color: #FFF0F8;
+/* TABLES */
+QTableView, QTableWidget {
+    background-color: #FFF5F8;
     border: 1px solid #FFB6C1;
-    selection-background-color: #FFB6C1;
-}
-
-/* TABLE */
-QTableView {
-    background-color: #FFF0F8;
+    border-radius: 10px;
     gridline-color: #FFB6C1;
     selection-background-color: #FF69B4;
     selection-color: white;
@@ -66,38 +56,99 @@ QTableView {
 QHeaderView::section {
     background-color: #FFB6C1;
     color: #3C3C3C;
-    padding: 6px;
+    padding: 8px;
+    font-weight: 600;
     border: none;
 }
 
-/* SCROLLBAR */
+/* SCROLLBARS */
 QScrollBar:vertical, QScrollBar:horizontal {
-    background: #FDE6F3;
-    width: 10px;
-    margin: 0px;
+    background: #FDF0F5;
+    width: 12px;
+    margin: 2px;
+    border-radius: 6px;
 }
 QScrollBar::handle {
     background: #FF69B4;
-    border-radius: 5px;
+    border-radius: 6px;
 }
 QScrollBar::handle:hover {
     background: #FF4FA0;
 }
 QScrollBar::add-line, QScrollBar::sub-line {
-    height: 0;
+    height: 0px;
+    width: 0px;
+}
+
+/* COMBO BOX */
+QComboBox {
+    background-color: #FFFFFF;
+    border: 2px solid #FFB6C1;
+    border-radius: 10px;
+    padding: 8px 12px;
+}
+QComboBox QAbstractItemView {
+    background-color: #FFF0F8;
+    border: 1px solid #FFB6C1;
+    selection-background-color: #FFB6C1;
 }
 
 /* CHECKBOX */
 QCheckBox {
-    spacing: 6px;
+    spacing: 8px;
+    font-weight: 500;
+    padding: 4px;
 }
-QCheckBox::indicator {
-    width: 16px;
-    height: 16px;
+
+/* DIALOG-FENSTER */
+QDialog {
+    background-color: #FFF0F8;
+    border-radius: 12px;
+    padding: 20px;
 }
-QCheckBox::indicator:unchecked {
-    image: url(:/icons/checkbox_unchecked.png);
+
+/* TEXTFELDER IM DIALOG */
+QDialog QLineEdit {
+    background-color: #FFFFFF;
+    border: 2px solid #FFB6C1;
+    border-radius: 8px;
+    padding: 6px 10px;
 }
-QCheckBox::indicator:checked {
-    image: url(:/icons/checkbox_checked_pink.png);
+QDialog QLineEdit:focus {
+    border: 2px solid #FF69B4;
+}
+
+/* LABELS IM DIALOG */
+QDialog QLabel {
+    color: #3C3C3C;
+    font-weight: 500;
+}
+
+/* BUTTONS IM DIALOG */
+QDialogButtonBox QPushButton {
+    background-color: #FF69B4;
+    color: white;
+    border-radius: 10px;
+    padding: 8px 16px;
+}
+QDialogButtonBox QPushButton:hover {
+    background-color: #FF4FA0;
+}
+QDialogButtonBox QPushButton:pressed {
+    background-color: #E6448E;
+}
+
+
+/* DIALOG BUTTONS */
+QDialogButtonBox QPushButton {
+    background-color: #FF69B4;
+    color: white;
+    border-radius: 10px;
+    padding: 8px 16px;
+}
+QDialogButtonBox QPushButton:hover {
+    background-color: #FF4FA0;
+}
+QDialogButtonBox QPushButton:pressed {
+    background-color: #E6448E;
 }
