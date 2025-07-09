@@ -32,21 +32,22 @@ class KundenTab(QWidget):
 
         # Tabelle
         self.table = QTableWidget()
-        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.table.cellDoubleClicked.connect(self.kunde_bearbeiten_dialog)
+        self.table.setStyleSheet("QTableWidget { padding-top: 70px; padding-bottom: 70px; }")
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # Immer anzeigen!
+        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+        # 🚫 WICHTIG: Verhindere, dass letzte Spalte sich automatisch stretcht!
+        self.table.horizontalHeader().setStretchLastSection(False)
+
+
+        # 💡 Spaltenbreite manuell setzen – Beispiel weiter unten
+        self.table.setColumnCount(11)
+        self.table.setHorizontalHeaderLabels([
+            "Kundennr", "Vorname", "Nachname", "Geburtsdatum", "Straße",
+            "Hausnr.", "PLZ", "Ort", "Telefon", "E-Mail", "Feedbacks"
+        ])
 
         layout.addWidget(self.table)
-
-        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.table.horizontalHeader().setStretchLastSection(False)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-
-        # Status-Label
-        self.status_label = QLabel("")
-        self.status_label.setStyleSheet("color: green; font-style: italic; padding-left: 6px;")
-        layout.addWidget(self.status_label)
 
         # Delete-Button zentriert
         self.delete_button = QPushButton("🗑️ Kunden löschen")
@@ -79,7 +80,7 @@ class KundenTab(QWidget):
         self.table.setRowCount(len(daten))
         self.table.setColumnCount(11)
         self.table.setHorizontalHeaderLabels([
-            "Kundennr", "Vorname", "Nachname", "Geburtsdatum", "Straße",
+            "KdNr.", "Vorname", "Nachname", "Geburtsdatum", "Straße",
             "Hausnr.", "PLZ", "Ort", "Telefon", "E-Mail", "Feedbacks"
         ])
 
@@ -98,6 +99,21 @@ class KundenTab(QWidget):
 
         for i in range(self.table.columnCount()):
             self.table.setColumnWidth(i, 200)
+
+        self.table.setColumnWidth(0, 500)  # extra breit
+
+        self.table.setColumnWidth(0, 70)   # Kundennr
+        self.table.setColumnWidth(1, 120)  # Vorname
+        self.table.setColumnWidth(2, 130)  # Nachname
+        self.table.setColumnWidth(3, 120)  # Geburtsdatum
+        self.table.setColumnWidth(4, 180)  # Straße
+        self.table.setColumnWidth(5, 70)   # Hausnr
+        self.table.setColumnWidth(6, 70)   # PLZ
+        self.table.setColumnWidth(7, 120)  # Ort
+        self.table.setColumnWidth(8, 140)  # Telefon
+        self.table.setColumnWidth(9, 200)  # Email
+        self.table.setColumnWidth(10, 130) # Feedbacks
+
 
     def kunden_filtern(self):
         suchtext = self.suchfeld.text().lower()

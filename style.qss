@@ -48,7 +48,8 @@ QPushButton:pressed {
 QTableView, QTableWidget {
     background-color: #FFF5F8;
     border: 1px solid #FFB6C1;
-    border-radius: 10px;
+    border-radius: 12px;
+    padding: 2px;
     gridline-color: #FFB6C1;
     selection-background-color: #FF69B4;
     selection-color: white;

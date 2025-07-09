@@ -17,30 +17,6 @@ db = client["krautundrueben"]
 # Collection "feedbacks" auswählen
 feedbacks = db["feedbacks"]
 
-# Testdokument einfügen
-feedbacks.insert_one({
-    "kunde_id": 1,
-    "datum": "2025-07-09",
-    "text": "Dies ist ein Testfeedback aus Python"
-})
-
-print("✅ Testfeedback gespeichert!")
-
-
-def test_db_connection():
-    try:
-        conn = get_sql_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM KUNDE")
-        count = cursor.fetchone()[0]
-        print(f"✔️ Verbindung erfolgreich! Es gibt {count} Kunden.")
-        cursor.close()
-        conn.close()
-    except Exception as e:
-        print(f"❌ Fehler bei DB-Verbindung: {e}")
-
-test_db_connection()
-
 class MainWindow(QMainWindow):
     def __init__(self):
 

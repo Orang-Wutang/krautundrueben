@@ -18,9 +18,10 @@ class BestellungenTab(QWidget):
 
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+        # Alle Spalten manuell anpassbar, aber nicht automatisch gestreckt
         self.table.horizontalHeader().setStretchLastSection(False)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         self.setLayout(layout)
         self.lade_bestellungen()
