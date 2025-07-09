@@ -1,12 +1,12 @@
 import random
-from PyQt5.QtCore import Qt, QTimer
+import datetime
+from tabs.db import get_sql_connection, get_mongo_connection, get_mongo_collection
+from PyQt5.QtCore import Qt, QTimer, QTime
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem,
     QLineEdit, QPushButton, QDialog, QFormLayout,
     QDialogButtonBox, QMessageBox, QLabel, QHBoxLayout, QHeaderView
 )
-
-from db import get_connection
 
 class KundenTab(QWidget):
     def __init__(self):
@@ -63,7 +63,9 @@ class KundenTab(QWidget):
         self.lade_kunden()
 
     def lade_kunden(self):
-        conn = get_connection()
+        mongo_db = get_mongo_connection()
+        feedbacks_collection = mongo_db["feedbacks"]
+        conn = get_sql_connection()
         cursor = conn.cursor()
         cursor.execute("""
             SELECT KUNDENNR, VORNAME, NACHNAME, GEBURTSDATUM, STRASSE,
@@ -75,10 +77,10 @@ class KundenTab(QWidget):
         conn.close()
 
         self.table.setRowCount(len(daten))
-        self.table.setColumnCount(10)
+        self.table.setColumnCount(11)
         self.table.setHorizontalHeaderLabels([
             "Kundennr", "Vorname", "Nachname", "Geburtsdatum", "Straße",
-            "Hausnr.", "PLZ", "Ort", "Telefon", "E-Mail"
+            "Hausnr.", "PLZ", "Ort", "Telefon", "E-Mail", "Feedbacks"
         ])
 
         for i, row in enumerate(daten):
@@ -92,7 +94,7 @@ class KundenTab(QWidget):
     def kunden_filtern(self):
         suchtext = self.suchfeld.text().lower()
 
-        conn = get_connection()
+        conn = get_sql_connection()
         cursor = conn.cursor()
         cursor.execute("""
             SELECT KUNDENNR, VORNAME, NACHNAME, GEBURTSDATUM, STRASSE,
@@ -139,7 +141,7 @@ class KundenTab(QWidget):
                 self.zeige_statusmeldung("⚠️ Alle Pflichtfelder müssen ausgefüllt sein.")
                 return
 
-            conn = get_connection()
+            conn = get_sql_connection()
             cursor = conn.cursor()
             cursor.execute("SELECT MAX(KUNDENNR) FROM KUNDE")
             max_id = cursor.fetchone()[0] or 2000
@@ -193,7 +195,7 @@ class KundenTab(QWidget):
                                 QMessageBox.Yes | QMessageBox.No) != QMessageBox.Yes:
             return
 
-        conn = get_connection()
+        conn = get_sql_connection()
         cursor = conn.cursor()
         cursor.execute("DELETE FROM KUNDE WHERE KUNDENNR = %s", (kundennr,))
         conn.commit()
@@ -209,8 +211,36 @@ class KundenTab(QWidget):
 
     def kunde_bearbeiten_dialog(self, row, column):
         aktuelle_bezeichnung = self.table.horizontalHeaderItem(column).text()
-        alter_wert = self.table.item(row, column).text()
+        item = self.table.item(row, column)
+        if item is None:
+            QMessageBox.warning(self, "Fehler", "Dieses Feld ist leer und kann nicht bearbeitet werden.")
+            return
+
+        alter_wert = item.text()
         kundennr = int(self.table.item(row, 0).text())  # Spalte 0 = KUNDENNR
+
+        # Wenn auf Spalte "Feedbacks" (Spalte 10) geklickt wurde
+        if column == 10:
+            mongo_db = get_mongo_connection()
+            feedback_collection = mongo_db["feedbacks"]
+            feedbacks = feedback_collection.find({"kunde_id": kundennr})
+
+            texte = "\n\n".join([
+                f"{f.get('datum', '??')}: {f.get('text', '')}" for f in feedbacks
+            ])
+
+            if not texte:
+                texte = "Keine Feedbacks vorhanden."
+
+            QMessageBox.information(self, f"Feedbacks von Kunde {kundennr}", texte)
+
+            # Frage, ob neues Feedback eingetragen werden soll
+            if QMessageBox.question(self, "Neues Feedback hinzufügen?",
+                                    "Möchtest du ein Feedback zu diesem Kunden hinzufügen?",
+                                    QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+                self.feedback_hinzufuegen_dialog(kundennr)
+
+            return  # Damit der normale Bearbeiten-Dialog nicht mehr geöffnet wird
 
         dialog = QDialog(self)
         dialog.setWindowTitle(f"{aktuelle_bezeichnung} bearbeiten")
@@ -252,7 +282,7 @@ class KundenTab(QWidget):
                 return
 
             # In DB aktualisieren
-            conn = get_connection()
+            conn = get_sql_connection()
             cursor = conn.cursor()
             cursor.execute(
                 f"UPDATE KUNDE SET {spaltenname} = %s WHERE KUNDENNR = %s",
@@ -262,8 +292,81 @@ class KundenTab(QWidget):
             cursor.close()
             conn.close()
 
+            try:
+                collection = get_mongo_collection()
+                collection.insert_one({
+                    "aktion": "Kundendaten bearbeitet",
+                    "kundennr": kundennr,
+                    "feld": spaltenname,
+                    "neuer_wert": neuer_wert,
+                    "zeitpunkt": datetime.datetime.now().isoformat()
+                })
+            except Exception as e:
+                print(f"⚠️ Fehler beim Speichern in MongoDB: {e}")
+
             # Tabelle neu laden
             self.lade_kunden()
             self.zeige_statusmeldung("✅ Kundendaten aktualisiert.")
+
+    def feedback_hinzufuegen_dialog(self, kundennr):
+        dialog = QDialog(self)
+        dialog.setWindowTitle(f"📝 Feedback zu Kunde {kundennr}")
+        layout = QVBoxLayout(dialog)
+
+        feld = QLineEdit()
+        feld.setPlaceholderText("Feedback eingeben...")
+        layout.addWidget(QLabel("Neues Feedback:"))
+        layout.addWidget(feld)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        layout.addWidget(buttons)
+
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+
+        if dialog.exec_() == QDialog.Accepted:
+            feedback_text = feld.text().strip()
+            if feedback_text:
+                mongo_db = get_mongo_connection()
+                feedbacks = mongo_db["feedbacks"]
+                feedbacks.insert_one({
+                    "kunde_id": kundennr,
+                    "datum": QTime.currentTime().toString("HH:mm:ss"),
+                    "text": feedback_text
+                })
+                self.zeige_statusmeldung("✅ Feedback gespeichert.")
+            else:
+                self.zeige_statusmeldung("⚠️ Feedback darf nicht leer sein.")
+
+    def feedback_hinzufuegen_dialog(self, kundennr):
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(f"📝 Feedback zu Kunde {kundennr}")
+        layout = QVBoxLayout(dialog)
+
+        textfeld = QLineEdit()
+        textfeld.setPlaceholderText("Feedback eingeben...")
+        layout.addWidget(textfeld)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        layout.addWidget(buttons)
+
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+
+        if dialog.exec_() == QDialog.Accepted:
+            feedback_text = textfeld.text().strip()
+            if feedback_text:
+                mongo_db = get_mongo_connection()
+                feedbacks = mongo_db["feedbacks"]
+                feedbacks.insert_one({
+                    "kunde_id": kundennr,
+                    "datum": QTimer().currentTime().toString("HH:mm:ss"),
+                    "text": feedback_text
+                })
+                self.zeige_statusmeldung("✅ Feedback gespeichert.")
+            else:
+                self.zeige_statusmeldung("⚠️ Feedback darf nicht leer sein.")
+
 
 

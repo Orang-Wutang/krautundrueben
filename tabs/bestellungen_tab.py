@@ -1,7 +1,7 @@
 # tabs/bestellungen_tab.py
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QLineEdit, QHeaderView
 from PyQt5.QtCore import Qt
-from db import get_connection
+from db import get_sql_connection
 
 class BestellungenTab(QWidget):
     def __init__(self):
@@ -26,7 +26,7 @@ class BestellungenTab(QWidget):
         self.lade_bestellungen()
 
     def lade_bestellungen(self):
-        conn = get_connection()
+        conn = get_sql_connection()
         cursor = conn.cursor()
         query = """
             SELECT b.BESTELLNR, k.NACHNAME, b.BESTELLDATUM, b.RECHNUNGSBETRAG
@@ -53,7 +53,7 @@ class BestellungenTab(QWidget):
     def bestellungen_filtern(self):
         suchtext = self.suchfeld.text().lower()
 
-        conn = get_connection()
+        conn = get_sql_connection()
         cursor = conn.cursor()
         cursor.execute("""
                        SELECT b.BESTELLNR, k.NACHNAME, b.BESTELLDATUM, b.RECHNUNGSBETRAG

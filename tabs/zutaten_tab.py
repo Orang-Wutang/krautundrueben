@@ -1,7 +1,7 @@
 # tabs/zutaten_tab.py
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QLineEdit, QMessageBox, QComboBox, QHBoxLayout, QPushButton, QHeaderView
 
-from db import get_connection
+from db import get_sql_connection
 
 
 class ZutatenTab(QWidget):
@@ -42,7 +42,7 @@ class ZutatenTab(QWidget):
         layout.addLayout(filter_layout)
 
         # Jetzt DB-Verbindung und Inhalte einfüllen
-        conn = get_connection()
+        conn = get_sql_connection()
         cursor = conn.cursor()
 
         cursor.execute("SELECT ALLERGENNR, BEZEICHNUNG FROM ALLERGEN")
@@ -104,7 +104,7 @@ class ZutatenTab(QWidget):
             sql += " AND re.KATEGORIENR = %s"
             params.append(kat_id)
 
-        conn = get_connection()
+        conn = get_sql_connection()
         cursor = conn.cursor()
         cursor.execute(sql, params)
         zutaten = cursor.fetchall()
@@ -166,7 +166,7 @@ class ZutatenTab(QWidget):
             QMessageBox.warning(self, "Ungültiger Wert", "Bitte gib eine gültige Zahl für den Bestand ein.")
             return
 
-        conn = get_connection()
+        conn = get_sql_connection()
         cursor = conn.cursor()
         cursor.execute("""
                        UPDATE ZUTAT

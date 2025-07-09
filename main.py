@@ -1,14 +1,35 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget
-
-from db import get_connection
+from db import get_sql_connection
 from tabs.kunden_tab import KundenTab
 from tabs.bestellungen_tab import BestellungenTab
 from tabs.zutaten_tab import ZutatenTab
+from pymongo import MongoClient
+
+from pymongo import MongoClient
+
+# Verbindung zu lokalem MongoDB-Server
+client = MongoClient("mongodb://localhost:27017/")
+
+# Datenbank "krautundrueben" auswählen
+db = client["krautundrueben"]
+
+# Collection "feedbacks" auswählen
+feedbacks = db["feedbacks"]
+
+# Testdokument einfügen
+feedbacks.insert_one({
+    "kunde_id": 1,
+    "datum": "2025-07-09",
+    "text": "Dies ist ein Testfeedback aus Python"
+})
+
+print("✅ Testfeedback gespeichert!")
+
 
 def test_db_connection():
     try:
-        conn = get_connection()
+        conn = get_sql_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM KUNDE")
         count = cursor.fetchone()[0]
