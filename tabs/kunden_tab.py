@@ -86,6 +86,14 @@ class KundenTab(QWidget):
         for i, row in enumerate(daten):
             for j, value in enumerate(row):
                 self.table.setItem(i, j, QTableWidgetItem(str(value)))
+
+            # Feedback-Spalte (Index 10) befüllen
+            kundennr = row[0]
+            anzahl_feedbacks = feedbacks_collection.count_documents({"kunde_id": kundennr})
+            feedback_item = QTableWidgetItem(f"{anzahl_feedbacks} Feedback(s)")
+            feedback_item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)  # Nicht editierbar
+            self.table.setItem(i, 10, feedback_item)
+
             self.table.setRowHeight(i, 30)
 
         for i in range(self.table.columnCount()):
@@ -331,7 +339,7 @@ class KundenTab(QWidget):
                 feedbacks = mongo_db["feedbacks"]
                 feedbacks.insert_one({
                     "kunde_id": kundennr,
-                    "datum": QTime.currentTime().toString("HH:mm:ss"),
+                    "datum": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "text": feedback_text
                 })
                 self.zeige_statusmeldung("✅ Feedback gespeichert.")
@@ -361,10 +369,11 @@ class KundenTab(QWidget):
                 feedbacks = mongo_db["feedbacks"]
                 feedbacks.insert_one({
                     "kunde_id": kundennr,
-                    "datum": QTimer().currentTime().toString("HH:mm:ss"),
+                    "datum": datetime.datetime.now().strftime("%H:%M:%S"),
                     "text": feedback_text
                 })
                 self.zeige_statusmeldung("✅ Feedback gespeichert.")
+                self.lade_kunden()
             else:
                 self.zeige_statusmeldung("⚠️ Feedback darf nicht leer sein.")
 
