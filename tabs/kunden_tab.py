@@ -206,7 +206,7 @@ class KundenTab(QWidget):
         kundennr = self.table.item(zeile, 0).text()
 
         spruch = random.choice([
-            "Willst du diesen Kunden wirklich löschen? 😢",
+            "Willst du diesen Kunden wirklich löschen? :(",
             "Vielleicht hatte er nur einen schlechten Tag 🤷‍",
             "Das ist dein letzter Moment, um es dir anders zu überlegen… 🤔",
             "Bist du bereit für diese Verantwortung?",
