@@ -1,4 +1,6 @@
-/* GLOBAL DEFAULTS */
+/* -------------------------------------------------
+   Global Defaults
+   ------------------------------------------------- */
 * {
     font-family: 'Segoe UI', sans-serif;
     font-size: 12pt;
@@ -7,29 +9,38 @@
     border: none;
 }
 
-/* MAIN WINDOW */
+/* -------------------------------------------------
+   Main Window
+   ------------------------------------------------- */
 QMainWindow {
-    background-color: #FDF0F5;  /* zartes Rosa als Basis */
+    background-color: #FDF0F5; /* zartes Rosa als Basis */
 }
 
-/* LABELS */
+/* -------------------------------------------------
+   Labels
+   ------------------------------------------------- */
 QLabel {
     color: #3C3C3C;
     font-weight: 500;
 }
 
-/* LINE EDIT */
+/* -------------------------------------------------
+   LineEdits
+   ------------------------------------------------- */
 QLineEdit {
-    background-color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.95);
     padding: 8px 12px;
     border: 2px solid #FFB6C1;
     border-radius: 10px;
 }
 QLineEdit:focus {
     border: 2px solid #FF69B4;
+    background-color: rgba(255, 255, 255, 1);
 }
 
-/* BUTTONS */
+/* -------------------------------------------------
+   Push Buttons
+   ------------------------------------------------- */
 QPushButton {
     background-color: #FF69B4;
     color: white;
@@ -44,9 +55,11 @@ QPushButton:pressed {
     background-color: #E6448E;
 }
 
-/* TABLES */
+/* -------------------------------------------------
+   Tables and Headers
+   ------------------------------------------------- */
 QTableView, QTableWidget {
-    background-color: #FFF5F8;
+    background-color: rgba(255, 245, 248, 0.95);
     border: 1px solid #FFB6C1;
     border-radius: 12px;
     padding: 2px;
@@ -62,7 +75,9 @@ QHeaderView::section {
     border: none;
 }
 
-/* SCROLLBARS */
+/* -------------------------------------------------
+   Scroll Bars
+   ------------------------------------------------- */
 QScrollBar:vertical, QScrollBar:horizontal {
     background: #FDF0F5;
     width: 12px;
@@ -81,88 +96,16 @@ QScrollBar::add-line, QScrollBar::sub-line {
     width: 0px;
 }
 
-/* COMBO BOX */
+/* -------------------------------------------------
+   ComboBox
+   ------------------------------------------------- */
 QComboBox {
-    background-color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.95);
     border: 2px solid #FFB6C1;
-    border-radius: 10px;
-    padding: 8px 12px;
-}
-QComboBox QAbstractItemView {
-    background-color: #FFF0F8;
-    border: 1px solid #FFB6C1;
-    selection-background-color: #FFB6C1;
-}
-
-/* CHECKBOX */
-QCheckBox {
-    spacing: 8px;
-    font-weight: 500;
-    padding: 4px;
-}
-
-/* DIALOG-FENSTER */
-QDialog {
-    background-color: #FFF0F8;
-    border-radius: 12px;
-    padding: 20px;
-}
-
-/* TEXTFELDER IM DIALOG */
-QDialog QLineEdit {
-    background-color: #FFFFFF;
-    border: 2px solid #FFB6C1;
-    border-radius: 8px;
-    padding: 6px 10px;
-}
-QDialog QLineEdit:focus {
-    border: 2px solid #FF69B4;
-}
-
-/* LABELS IM DIALOG */
-QDialog QLabel {
-    color: #3C3C3C;
-    font-weight: 500;
-}
-
-/* BUTTONS IM DIALOG */
-QDialogButtonBox QPushButton {
-    background-color: #FF69B4;
-    color: white;
-    border-radius: 10px;
-    padding: 8px 16px;
-}
-QDialogButtonBox QPushButton:hover {
-    background-color: #FF4FA0;
-}
-QDialogButtonBox QPushButton:pressed {
-    background-color: #E6448E;
-}
-
-
-/* DIALOG BUTTONS */
-QDialogButtonBox QPushButton {
-    background-color: #FF69B4;
-    color: white;
-    border-radius: 10px;
-    padding: 8px 16px;
-}
-QDialogButtonBox QPushButton:hover {
-    background-color: #FF4FA0;
-}
-QDialogButtonBox QPushButton:pressed {
-    background-color: #E6448E;
-}
-
-QComboBox {
-    background-color: white;
-    border: 2px solid #f48fb1;
     border-radius: 12px;
     padding: 6px 30px 6px 10px;
     font-size: 14px;
 }
-
-/* Bereich rechts, wo der Pfeil sitzt */
 QComboBox::drop-down {
     subcontrol-origin: padding;
     subcontrol-position: top right;
@@ -170,19 +113,62 @@ QComboBox::drop-down {
     border: none;
     background: transparent;
 }
-
-/* Dein eigener Dropdown-Pfeil */
 QComboBox::down-arrow {
     image: url(images/angle-small-down.png);
     width: 16px;
     height: 16px;
 }
-
-
 QComboBox QAbstractItemView {
     background-color: #fff0f5;
     border: 1px solid #ff69b4;
     selection-background-color: #ffb6c1;
     padding: 4px;
     font-size: 11pt;
+}
+
+/* -------------------------------------------------
+   CheckBox
+   ------------------------------------------------- */
+QCheckBox {
+    spacing: 8px;
+    font-weight: 500;
+    padding: 4px;
+}
+
+/* -------------------------------------------------
+   Dialogs
+   ------------------------------------------------- */
+QDialog {
+    background-color: rgba(255, 240, 248, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+QDialog QLineEdit {
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid #FFB6C1;
+    border-radius: 8px;
+    padding: 6px 10px;
+}
+QDialog QLineEdit:focus {
+    border: 2px solid #FF69B4;
+    background-color: #FFFFFF;
+}
+
+QDialog QLabel {
+    color: #3C3C3C;
+    font-weight: 500;
+}
+
+QDialogButtonBox QPushButton {
+    background-color: #FF69B4;
+    color: white;
+    border-radius: 10px;
+    padding: 8px 16px;
+}
+QDialogButtonBox QPushButton:hover {
+    background-color: #FF4FA0;
+}
+QDialogButtonBox QPushButton:pressed {
+    background-color: #E6448E;
 }
