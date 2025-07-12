@@ -333,6 +333,7 @@ class KundenTab(QWidget):
             self.zeige_statusmeldung("✅ Kundendaten aktualisiert.")
 
     def feedback_hinzufuegen_dialog(self, kundennr):
+        """Neuen Feedback-Eintrag für den gegebenen Kunden speichern."""
         dialog = QDialog(self)
         dialog.setWindowTitle(f"📝 Feedback zu Kunde {kundennr}")
         layout = QVBoxLayout(dialog)
@@ -356,37 +357,7 @@ class KundenTab(QWidget):
                 feedbacks.insert_one({
                     "kunde_id": kundennr,
                     "datum": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "text": feedback_text
-                })
-                self.zeige_statusmeldung("✅ Feedback gespeichert.")
-            else:
-                self.zeige_statusmeldung("⚠️ Feedback darf nicht leer sein.")
-
-    def feedback_hinzufuegen_dialog(self, kundennr):
-
-        dialog = QDialog(self)
-        dialog.setWindowTitle(f"📝 Feedback zu Kunde {kundennr}")
-        layout = QVBoxLayout(dialog)
-
-        textfeld = QLineEdit()
-        textfeld.setPlaceholderText("Feedback eingeben...")
-        layout.addWidget(textfeld)
-
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        layout.addWidget(buttons)
-
-        buttons.accepted.connect(dialog.accept)
-        buttons.rejected.connect(dialog.reject)
-
-        if dialog.exec_() == QDialog.Accepted:
-            feedback_text = textfeld.text().strip()
-            if feedback_text:
-                mongo_db = get_mongo_connection()
-                feedbacks = mongo_db["feedbacks"]
-                feedbacks.insert_one({
-                    "kunde_id": kundennr,
-                    "datum": datetime.datetime.now().strftime("%H:%M:%S"),
-                    "text": feedback_text
+                    "text": feedback_text,
                 })
                 self.zeige_statusmeldung("✅ Feedback gespeichert.")
                 self.lade_kunden()
