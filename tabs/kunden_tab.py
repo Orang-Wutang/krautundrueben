@@ -32,15 +32,16 @@ class KundenTab(QWidget):
 
         # Tabelle
         self.table = QTableWidget()
+        self.table.cellDoubleClicked.connect(self.kunde_bearbeiten_dialog)
         self.table.setStyleSheet("QTableWidget { padding-top: 70px; padding-bottom: 70px; }")
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # Immer anzeigen!
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
-        # 🚫 WICHTIG: Verhindere, dass letzte Spalte sich automatisch stretcht!
+        #Verhindert, dass letzte Spalte sich automatisch stretcht!
         self.table.horizontalHeader().setStretchLastSection(False)
 
 
-        # 💡 Spaltenbreite manuell setzen – Beispiel weiter unten
+        #Spaltenbreite manuell setzen
         self.table.setColumnCount(11)
         self.table.setHorizontalHeaderLabels([
             "Kundennr", "Vorname", "Nachname", "Geburtsdatum", "Straße",
@@ -59,6 +60,9 @@ class KundenTab(QWidget):
         button_layout_delete.addWidget(self.delete_button)
         button_layout_delete.addStretch()
         layout.addLayout(button_layout_delete)
+        self.status_label = QLabel("")
+        self.status_label.setStyleSheet("color: green; font-weight: bold;")
+        layout.addWidget(self.status_label)
 
         self.setLayout(layout)
         self.lade_kunden()
@@ -88,11 +92,17 @@ class KundenTab(QWidget):
             for j, value in enumerate(row):
                 self.table.setItem(i, j, QTableWidgetItem(str(value)))
 
-            # Feedback-Spalte (Index 10) befüllen
+            # Feedback-Spalte
             kundennr = row[0]
-            anzahl_feedbacks = feedbacks_collection.count_documents({"kunde_id": kundennr})
+
+            try:
+                anzahl_feedbacks = feedbacks_collection.count_documents({"kunde_id": kundennr})
+            except Exception as e:
+                print(f"Fehler beim Zählen der Feedbacks für {kundennr}: {e}")
+                anzahl_feedbacks = 0
+
             feedback_item = QTableWidgetItem(f"{anzahl_feedbacks} Feedback(s)")
-            feedback_item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)  # Nicht editierbar
+            feedback_item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
             self.table.setItem(i, 10, feedback_item)
 
             self.table.setRowHeight(i, 30)
@@ -333,6 +343,7 @@ class KundenTab(QWidget):
             self.zeige_statusmeldung("✅ Kundendaten aktualisiert.")
 
     def feedback_hinzufuegen_dialog(self, kundennr):
+        print(f"Feedback eingefügt für Kunde {kundennr}")
         dialog = QDialog(self)
         dialog.setWindowTitle(f"📝 Feedback zu Kunde {kundennr}")
         layout = QVBoxLayout(dialog)
@@ -359,39 +370,6 @@ class KundenTab(QWidget):
                     "text": feedback_text
                 })
                 self.zeige_statusmeldung("✅ Feedback gespeichert.")
-            else:
-                self.zeige_statusmeldung("⚠️ Feedback darf nicht leer sein.")
-
-    def feedback_hinzufuegen_dialog(self, kundennr):
-
-        dialog = QDialog(self)
-        dialog.setWindowTitle(f"📝 Feedback zu Kunde {kundennr}")
-        layout = QVBoxLayout(dialog)
-
-        textfeld = QLineEdit()
-        textfeld.setPlaceholderText("Feedback eingeben...")
-        layout.addWidget(textfeld)
-
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        layout.addWidget(buttons)
-
-        buttons.accepted.connect(dialog.accept)
-        buttons.rejected.connect(dialog.reject)
-
-        if dialog.exec_() == QDialog.Accepted:
-            feedback_text = textfeld.text().strip()
-            if feedback_text:
-                mongo_db = get_mongo_connection()
-                feedbacks = mongo_db["feedbacks"]
-                feedbacks.insert_one({
-                    "kunde_id": kundennr,
-                    "datum": datetime.datetime.now().strftime("%H:%M:%S"),
-                    "text": feedback_text
-                })
-                self.zeige_statusmeldung("✅ Feedback gespeichert.")
                 self.lade_kunden()
             else:
                 self.zeige_statusmeldung("⚠️ Feedback darf nicht leer sein.")
-
-
-
