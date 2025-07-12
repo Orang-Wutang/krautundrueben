@@ -60,6 +60,9 @@ class KundenTab(QWidget):
         button_layout_delete.addStretch()
         layout.addLayout(button_layout_delete)
 
+        self.status_label = QLabel("")
+        layout.addWidget(self.status_label)
+
         self.setLayout(layout)
         self.lade_kunden()
 
