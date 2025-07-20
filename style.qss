@@ -1,35 +1,70 @@
-QMainWindow {
-    background-color: #fff8f9;
+/* Hauptfenster */
+QWidget {
+    background-color: #e0f7ec;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 14px;
+    color: #2e2e2e;
 }
 
-QTabWidget::pane {
-    border: 2px solid #ff7aa2;
-    border-radius: 10px;
-    background-color: white;
+/* Tabelle */
+QTableWidget {
+    background-color: #ffffff;
+    border: 1px solid #b2dfdb;
+    border-radius: 8px;
+    padding: 5px;
 }
 
-QTabBar::tab {
-    background: #ffb6c1;
-    color: black;
-    padding: 10px;
-    margin: 2px;
-    border-radius: 10px;
+/* Header der Tabelle */
+QHeaderView::section {
+    background-color: #a5d6a7;
+    color: #2e2e2e;
+    padding: 5px;
+    border: none;
     font-weight: bold;
 }
 
-QTabBar::tab:selected {
-    background: #ff7aa2;
-    color: white;
+/* Buttons */
+QPushButton {
+    background-color: #ffa726;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 16px;
+    color: #2e2e2e;
+    font-weight: 500;
 }
-QWidget {
-    font-family: Arial;
-    font-size: 14px;
+
+QPushButton:hover {
+    background-color: #f48fb1;
 }
-QTableWidget {
-    border: 1px solid #ddd;
+
+/* Eingabefelder */
+QLineEdit, QComboBox {
+    background-color: #ffffff;
+    border: 2px solid #fce4ec;
+    border-radius: 8px;
+    padding: 6px 10px;
 }
-QHeaderView::section {
-    background-color: #f2f2f2;
-    padding: 5px;
-    border: 1px solid #ccc;
+
+
+QLineEdit {
+    max-width: 300px;
+}
+
+/* Dropdowns mit max-Breite */
+QComboBox {
+    max-width: 250px;
+}
+
+/* Scrollbalken modern */
+QScrollBar:vertical {
+    background: #f0f0f0;
+    width: 10px;
+    margin: 2px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical {
+    background: #a5d6a7;
+    min-height: 20px;
+    border-radius: 5px;
 }

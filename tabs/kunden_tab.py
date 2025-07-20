@@ -117,14 +117,20 @@ class KundenTab(QWidget):
         connection.close()
 
     def zeige_daten_in_tabelle(self, data):
-        self.table.clear()  # leere alte Daten
-        self.table.setRowCount(len(data))
+        # Leere Inhalte, aber nicht ganze Tabelle
+        self.table.clearContents()
+        self.table.setRowCount(0)
 
-        if data:
-            self.table.setColumnCount(len(data[0]))
-            self.table.setHorizontalHeaderLabels(data[0].keys())
-            for row_idx, row in enumerate(data):
-                for col_idx, (key, value) in enumerate(row.items()):
-                    self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
+        if not data:
+            return
+
+        self.table.setRowCount(len(data))
+        self.table.setColumnCount(len(data[0]))
+        self.table.setHorizontalHeaderLabels(data[0].keys())
+
+        for row_idx, row in enumerate(data):
+            for col_idx, (key, value) in enumerate(row.items()):
+                self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
+
 
 
