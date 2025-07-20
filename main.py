@@ -11,7 +11,7 @@ from tabs.zutaten_tab import ZutatenTab
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Kraut und Rüben GUI")
+        self.setWindowTitle("🌽Kraut und Rüben🥕")
 
 
         self.tabs = QTabWidget()
