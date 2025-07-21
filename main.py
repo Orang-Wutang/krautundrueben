@@ -11,8 +11,9 @@ from tabs.zutaten_tab import ZutatenTab
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
         self.setWindowTitle("🌽Kraut und Rüben🥕")
+        self.resize(1024,768)
+
         with open("style.qss", "r") as f:
             self.setStyleSheet(f.read())
 

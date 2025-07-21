@@ -55,7 +55,7 @@ QComboBox {
     max-width: 250px;
 }
 
-/* Scrollbalken modern */
+/* Scrollbalken*/
 QScrollBar:vertical {
     background: #f0f0f0;
     width: 10px;
@@ -66,5 +66,18 @@ QScrollBar:vertical {
 QScrollBar::handle:vertical {
     background: #a5d6a7;
     min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar:horizontal {
+    background: #f0f0f0;
+    height: 10px;
+    margin: 2px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #a5d6a7;
+    min-width: 20px;
     border-radius: 5px;
 }

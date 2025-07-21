@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QLineEdit, QPushButton, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QLineEdit, QPushButton, QHBoxLayout, QMessageBox, QComboBox, QDialog, QFormLayout
 from db import get_connection
 import os
 
@@ -11,6 +11,26 @@ class KundenTab(QWidget):
         self.export_button = QPushButton("DSGVO-Bericht herunterladen")
         self.export_button.clicked.connect(self.export_ds_report)
         layout.addWidget(self.export_button)
+
+        # Button-Leiste unterhalb der Tabelle
+        button_layout = QHBoxLayout()
+        button_layout.setSpacing(20)
+
+        hinzu_button = QPushButton("Kunde hinzufügen")
+        hinzu_button.clicked.connect(self.kunde_hinzufuegen)
+
+        bearbeiten_button = QPushButton("Kunde bearbeiten")
+        bearbeiten_button.clicked.connect(self.kunde_bearbeiten)
+
+        loeschen_button = QPushButton("Kunde löschen")
+        loeschen_button.clicked.connect(self.kunde_loeschen)
+
+        button_layout.addStretch()
+        button_layout.addWidget(hinzu_button)
+        button_layout.addWidget(bearbeiten_button)
+        button_layout.addWidget(loeschen_button)
+        button_layout.addStretch()
+        layout.addLayout(button_layout)
 
         #Suchfeld + Button
         such_layout = QHBoxLayout()
@@ -28,6 +48,52 @@ class KundenTab(QWidget):
         layout.addWidget(self.table)
 
         self.load_data()
+
+    def kunde_hinzufuegen(self):
+        dialog = KundenDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            self.load_data()
+
+    def kunde_bearbeiten(self):
+        row = self.table.currentRow()
+        if row < 0:
+            QMessageBox.warning(self, "Fehler", "Bitte wähle einen Kunden aus.")
+            return
+
+        daten = {}
+        for i in range(self.table.columnCount()):
+            header_item = self.table.horizontalHeaderItem(i)
+            cell_item = self.table.item(row, i)
+            if header_item and cell_item:
+                daten[header_item.text()] = cell_item.text()
+
+        dialog = KundenDialog(self, daten)
+        if dialog.exec_() == QDialog.Accepted:
+            self.load_data()
+
+    def kunde_loeschen(self):
+        row = self.table.currentRow()
+        if row < 0:
+            QMessageBox.warning(self, "Fehler", "Bitte wähle einen Kunden aus.")
+            return
+
+        kunden_id = self.table.item(row, 0).text()
+        bestaetigung = QMessageBox.question(self, "Löschen bestätigen",
+                                            f"Möchtest du Kunde #{kunden_id} wirklich löschen?",
+                                            QMessageBox.Yes | QMessageBox.No)
+
+        if bestaetigung != QMessageBox.Yes:
+            return
+
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM KUNDEN WHERE KUNDEN_ID = %s", (kunden_id,))
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        self.load_data()
+        QMessageBox.information(self, "Erfolg", f"Kunde #{kunden_id} wurde gelöscht.")
 
     def export_ds_report(self):
         from PyQt5.QtWidgets import QMessageBox
@@ -66,7 +132,7 @@ class KundenTab(QWidget):
         with open(dateiname, "w", encoding="utf-8") as f:
             f.write("DSGVO-Datenbericht\n")
             f.write("=" * 40 + "\n\n")
-            f.write(f"Kundennummer: {kunde['KUNDEN_ID']}\n")
+            f.write(f"Kunden_ID: {kunde['KUNDEN_ID']}\n")
             f.write(f"Name: {kunde['VORNAME']} {kunde['NACHNAME']}\n")
             f.write(f"Adresse: {kunde['STRASSE']} {kunde['HAUSNR']}, {kunde['PLZ']} {kunde['ORT']}\n")
             f.write(f"Telefon: {kunde['TELEFON']}\n")
@@ -132,5 +198,89 @@ class KundenTab(QWidget):
             for col_idx, (key, value) in enumerate(row.items()):
                 self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
 
+class KundenDialog(QDialog):
+    def __init__(self, parent=None, daten=None):
+        super().__init__(parent)
+        self.setWindowTitle("Kundendaten")
+        self.setFixedSize(400, 400)
 
+        layout = QFormLayout()
+        self.vorname = QLineEdit()
+        self.nachname = QLineEdit()
+        self.strasse = QLineEdit()
+        self.hausnr = QLineEdit()
+        self.plz = QLineEdit()
+        self.ort = QLineEdit()
+        self.telefon = QLineEdit()
+        self.email = QLineEdit()
+        self.volljaehrig = QComboBox()
+        self.volljaehrig.addItems(["J", "N"])
+        self.datenschutz = QComboBox()
+        self.datenschutz.addItems(["J", "N"])
 
+        layout.addRow("Vorname:", self.vorname)
+        layout.addRow("Nachname:", self.nachname)
+        layout.addRow("Straße:", self.strasse)
+        layout.addRow("Hausnummer:", self.hausnr)
+        layout.addRow("PLZ:", self.plz)
+        layout.addRow("Ort:", self.ort)
+        layout.addRow("Telefon:", self.telefon)
+        layout.addRow("E-Mail:", self.email)
+        layout.addRow("Volljährig:", self.volljaehrig)
+        layout.addRow("Datenschutzerklärung:", self.datenschutz)
+
+        buttons = QHBoxLayout()
+        speichern = QPushButton("Speichern")
+        speichern.clicked.connect(self.speichern)
+        abbrechen = QPushButton("Abbrechen")
+        abbrechen.clicked.connect(self.reject)
+        buttons.addWidget(speichern)
+        buttons.addWidget(abbrechen)
+        layout.addRow(buttons)
+
+        self.setLayout(layout)
+        self.kunden_id = None
+
+        if daten:
+            self.kunden_id = daten.get("KUNDEN_ID")
+            self.vorname.setText(daten.get("VORNAME", ""))
+            self.nachname.setText(daten.get("NACHNAME", ""))
+            self.strasse.setText(daten.get("STRASSE", ""))
+            self.hausnr.setText(daten.get("HAUSNR", ""))
+            self.plz.setText(daten.get("PLZ", ""))
+            self.ort.setText(daten.get("ORT", ""))
+            self.telefon.setText(daten.get("TELEFON", ""))
+            self.email.setText(daten.get("EMAIL", ""))
+            self.volljaehrig.setCurrentText(daten.get("VOLLJAEHRIG", "J"))
+            self.datenschutz.setCurrentText(daten.get("DATENSCHUTZ_ERKL", "J"))
+
+    def speichern(self):
+        daten = (
+            self.vorname.text(), self.nachname.text(), self.strasse.text(),
+            self.hausnr.text(), self.plz.text(), self.ort.text(),
+            self.telefon.text(), self.email.text(),
+            self.volljaehrig.currentText(), self.datenschutz.currentText()
+        )
+
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        if self.kunden_id:
+            query = """
+                UPDATE KUNDEN SET VORNAME=%s, NACHNAME=%s, STRASSE=%s, HAUSNR=%s,
+                PLZ=%s, ORT=%s, TELEFON=%s, EMAIL=%s, VOLLJAEHRIG=%s, DATENSCHUTZ_ERKL=%s
+                WHERE KUNDEN_ID = %s
+            """
+            cursor.execute(query, daten + (self.kunden_id,))
+        else:
+            query = """
+                INSERT INTO KUNDEN (VORNAME, NACHNAME, STRASSE, HAUSNR, PLZ, ORT,
+                TELEFON, EMAIL, VOLLJAEHRIG, DATENSCHUTZ_ERKL)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(query, daten)
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+        self.accept()
