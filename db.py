@@ -1,4 +1,5 @@
 import pymysql
+from pymongo import MongoClient
 
 def get_connection():
     return pymysql.connect(
@@ -10,3 +11,6 @@ def get_connection():
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor
     )
+def get_mongo_connection():
+    client = MongoClient("mongodb://localhost:27017/")
+    return client["kraut_und_rueben"]  # Name der MongoDB-Datenbank

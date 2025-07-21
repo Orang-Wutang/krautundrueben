@@ -1,53 +1,137 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QLineEdit, QPushButton, QHBoxLayout, QMessageBox, QComboBox, QDialog, QFormLayout
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QLineEdit, QPushButton,
+                             QHBoxLayout, QMessageBox, QComboBox, QDialog, QFormLayout, QTextEdit, QGroupBox, QSplitter,
+                             QSizePolicy)
+from PyQt5.QtCore import Qt
 from db import get_connection
-import os
+from db import get_mongo_connection
+from datetime import  datetime
 
 class KundenTab(QWidget):
     def __init__(self):
         super().__init__()
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-        #DSVGO-Bericht herunterladen
-        self.export_button = QPushButton("DSGVO-Bericht herunterladen")
+        main_layout = QVBoxLayout()
+        self.setLayout(main_layout)
+
+        # 1. DSGVO-Button zentriert
+        dsgvo_layout = QHBoxLayout()
+        dsgvo_layout.addStretch()
+        self.export_button = QPushButton("📄 DSGVO-Bericht herunterladen")
         self.export_button.clicked.connect(self.export_ds_report)
-        layout.addWidget(self.export_button)
+        dsgvo_layout.addWidget(self.export_button)
+        dsgvo_layout.addStretch()
+        main_layout.addLayout(dsgvo_layout)
 
-        # Button-Leiste unterhalb der Tabelle
-        button_layout = QHBoxLayout()
-        button_layout.setSpacing(20)
+        #2. Aktionen: Hinzufügen / Bearbeiten / Löschen
+        aktion_box = QGroupBox()
+        aktion_layout = QHBoxLayout()
+        self.hinzufuegen_btn = QPushButton("➕ Kunde hinzufügen")
+        self.bearbeiten_btn = QPushButton("✏️ Kunde bearbeiten")
+        self.loeschen_btn = QPushButton("🗑️ Kunde löschen")
 
-        hinzu_button = QPushButton("Kunde hinzufügen")
-        hinzu_button.clicked.connect(self.kunde_hinzufuegen)
+        for btn in [self.hinzufuegen_btn, self.bearbeiten_btn, self.loeschen_btn]:
+            btn.setFixedHeight(36)
+            btn.setMinimumWidth(160)
+            aktion_layout.addWidget(btn)
 
-        bearbeiten_button = QPushButton("Kunde bearbeiten")
-        bearbeiten_button.clicked.connect(self.kunde_bearbeiten)
+        self.hinzufuegen_btn.clicked.connect(self.kunde_hinzufuegen)
+        self.bearbeiten_btn.clicked.connect(self.kunde_bearbeiten)
+        self.loeschen_btn.clicked.connect(self.kunde_loeschen)
 
-        loeschen_button = QPushButton("Kunde löschen")
-        loeschen_button.clicked.connect(self.kunde_loeschen)
+        aktion_box.setLayout(aktion_layout)
+        main_layout.addWidget(aktion_box)
 
-        button_layout.addStretch()
-        button_layout.addWidget(hinzu_button)
-        button_layout.addWidget(bearbeiten_button)
-        button_layout.addWidget(loeschen_button)
-        button_layout.addStretch()
-        layout.addLayout(button_layout)
-
-        #Suchfeld + Button
+        #3. Suchfeld
+        such_box = QGroupBox()
         such_layout = QHBoxLayout()
         self.suchfeld = QLineEdit()
-        self.suchfeld.setPlaceholderText("Kundenname oder ID eingeben...")
+        self.suchfeld.setPlaceholderText("🔍 Kundenname oder ID eingeben…")
         such_button = QPushButton("Suchen")
+        such_button.setFixedHeight(36)
+        such_button.setMaximumWidth(150)
         such_button.clicked.connect(self.suche_kunden)
 
-        such_layout.addWidget(self.suchfeld)
-        such_layout.addWidget(such_button)
-        layout.addLayout(such_layout)
+        such_layout.addWidget(self.suchfeld, 3)
+        such_layout.addWidget(such_button, 1)
+        such_box.setLayout(such_layout)
+        main_layout.addWidget(such_box)
+
+        # 4. Tabelle und Feedback in QSplitter
+        splitter = QSplitter(Qt.Vertical)
 
         #Tabelle
         self.table = QTableWidget()
-        layout.addWidget(self.table)
+        splitter.addWidget(self.table)
 
+        # 5. Feedbackbereich
+        self.feedback_box = QGroupBox("Feedback zu ausgewähltem Kunden")
+        feedback_layout = QVBoxLayout()
+        self.feedback_list = QTextEdit()
+        self.feedback_list.setReadOnly(True)
+        feedback_layout.addWidget(self.feedback_list)
+
+        self.feedback_input = QLineEdit()
+        self.feedback_input.setPlaceholderText("Neues Feedback eingeben...")
+
+        self.feedback_speichern = QPushButton("💾 Feedback speichern")
+        self.feedback_speichern.setFixedHeight(36)
+        self.feedback_speichern.setMaximumWidth(200)
+        self.feedback_speichern.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.feedback_speichern.clicked.connect(self.feedback_speichern_klick)
+
+        feedback_layout.addWidget(self.feedback_input)
+        feedback_layout.addWidget(self.feedback_speichern)
+        self.feedback_box.setLayout(feedback_layout)
+        splitter.addWidget(self.feedback_box)
+
+        splitter.setSizes([600, 150])
+        main_layout.addWidget(splitter)
+
+        # Verbindung zu Feedback-Laden bei Auswahl
+        self.table.itemSelectionChanged.connect(self.feedback_laden)
+
+        # Daten laden
         self.load_data()
+
+    def feedback_laden(self):
+        row = self.table.currentRow()
+        if row < 0:
+            self.feedback_list.setPlainText("Kein Kunde ausgewählt.")
+            return
+
+        kunden_id = int(self.table.item(row, 0).text())
+        db = get_mongo_connection()
+        feedbacks = db["feedbacks"].find({"kunden_id": kunden_id})
+
+        text = ""
+        for fb in feedbacks:
+            text += f"{fb['datum'].strftime('%Y-%m-%d %H:%M:%S')}: {fb['feedback']}\n"
+
+        self.feedback_list.setPlainText(text if text else "Noch kein Feedback vorhanden.")
+
+    def feedback_speichern_klick(self):
+        row = self.table.currentRow()
+        if row < 0:
+            QMessageBox.warning(self, "Fehler", "Bitte wähle einen Kunden aus.")
+            return
+
+        text = self.feedback_input.text().strip()
+        if not text:
+            QMessageBox.warning(self, "Fehler", "Feedback darf nicht leer sein.")
+            return
+
+        kunden_id = int(self.table.item(row, 0).text())
+        from datetime import datetime
+
+        db = get_mongo_connection()
+        db["feedbacks"].insert_one({
+            "kunden_id": kunden_id,
+            "feedback": text,
+            "datum": datetime.now()
+        })
+
+        self.feedback_input.clear()
+        self.feedback_laden()
+        QMessageBox.information(self, "Erfolg", "Feedback gespeichert.")
 
     def kunde_hinzufuegen(self):
         dialog = KundenDialog(self)

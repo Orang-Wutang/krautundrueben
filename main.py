@@ -1,6 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget
-
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget
 from tabs.bestellungen_tab import BestellungenTab
 from tabs.kunden_tab import KundenTab
 from tabs.lieferanten_tab import LieferantenTab
@@ -12,7 +11,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("🌽Kraut und Rüben🥕")
-        self.resize(1024,768)
+        self.resize(1400,1000)
 
         with open("style.qss", "r") as f:
             self.setStyleSheet(f.read())

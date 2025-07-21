@@ -81,3 +81,28 @@ QScrollBar::handle:horizontal {
     min-width: 20px;
     border-radius: 5px;
 }
+
+QGroupBox {
+    border: 2px solid #fce4ec;
+    border-radius: 8px;
+    margin-top: 20px;
+    padding-top: 20px;  /* genug Platz für Titel! */
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-bottom: 12px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+QGroupBox::title {
+    subcontrol-origin: border;  /* sitzt auf dem Rand */
+    subcontrol-position: top left;  /* links oben */
+    padding: 0 6px;
+    margin-top: -10px;  /* hebt den Titel optisch aus dem Rahmen */
+    background-color: #e0f7ec;
+    color: #2e2e2e;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+
+
