@@ -77,20 +77,50 @@ class KundenTab(QWidget):
             QMessageBox.warning(self, "Fehler", "Bitte wähle einen Kunden aus.")
             return
 
-        kunden_id = self.table.item(row, 0).text()
-        bestaetigung = QMessageBox.question(self, "Löschen bestätigen",
-                                            f"Möchtest du Kunde #{kunden_id} wirklich löschen?",
-                                            QMessageBox.Yes | QMessageBox.No)
+        item = self.table.item(row, 0)
+        if item is None:
+            QMessageBox.warning(self, "Fehler", "Kunden-ID konnte nicht gelesen werden.")
+            return
+
+        kunden_id = item.text()
+
+        bestaetigung = QMessageBox.question(
+            self, "Löschen bestätigen",
+            f"Möchtest du Kunde #{kunden_id} wirklich DSGVO-konform löschen? Dabei werden alle zugehörigen Daten entfernt.",
+            QMessageBox.Yes | QMessageBox.No
+        )
 
         if bestaetigung != QMessageBox.Yes:
             return
 
         connection = get_connection()
         cursor = connection.cursor()
-        cursor.execute("DELETE FROM KUNDEN WHERE KUNDEN_ID = %s", (kunden_id,))
-        connection.commit()
-        cursor.close()
-        connection.close()
+
+        try:
+            # 🔸 Schritt 1: Bestellungs-Zutaten löschen
+            cursor.execute("""
+                DELETE BZ FROM BESTELLUNG_ZUTATEN BZ
+                JOIN BESTELLUNGEN B ON BZ.BESTELL_ID = B.BESTELL_ID
+                WHERE B.KUNDEN_ID = %s
+            """, (kunden_id,))
+
+            # 🔸 Schritt 2: Bestellungen selbst löschen
+            cursor.execute("DELETE FROM BESTELLUNGEN WHERE KUNDEN_ID = %s", (kunden_id,))
+
+            # 🔸 Schritt 3: Kunde löschen
+            cursor.execute("DELETE FROM KUNDEN WHERE KUNDEN_ID = %s", (kunden_id,))
+
+            connection.commit()
+            QMessageBox.information(self, "Erfolg", f"Kunde #{kunden_id} wurde vollständig gelöscht.")
+            self.load_data()
+
+        except Exception as e:
+            connection.rollback()
+            QMessageBox.critical(self, "Fehler", f"Fehler beim Löschen: {e}")
+
+        finally:
+            cursor.close()
+            connection.close()
 
         self.load_data()
         QMessageBox.information(self, "Erfolg", f"Kunde #{kunden_id} wurde gelöscht.")
